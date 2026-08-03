@@ -1,11 +1,24 @@
+@font-face {
+  font-family: 'Spilled Ink';
+  src: url('assets/fonts/spilled-ink.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'The Seasons';
+  src: url('assets/fonts/the-seasons-regular.woff2') format('woff2');
+  font-display: swap;
+}
+
 :root {
   --bg: #FFF1E5;
-  --ink: #2E2A3D;
+  --ink: #3B2E85;
   --card: #FFFCF6;
   --accent-primary: #C1502E;
   --accent-sage: #7A8B6F;
   --accent-clay: #D98BA0;
   --accent-teal: #4A6670;
+  --cta-gradient-start: #E07A4E;
+  --cta-gradient-end: #D98BA0;
 }
 
 * { box-sizing: border-box; }
@@ -228,7 +241,61 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; }
 }
 .card.center { text-align: center; }
 
-.lede { opacity: 0.85; margin: 0 0 1.5rem; }
+.lede {
+  font-family: 'The Seasons', serif;
+  font-size: 1.05rem;
+  opacity: 0.9;
+  margin: 0 0 1.5rem;
+}
+
+/* Hero (homepage) */
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 32px;
+}
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.brand-wordmark {
+  font-family: 'Spilled Ink', cursive;
+  font-weight: 400;
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--ink);
+  margin: 0 0 0.6rem;
+}
+.hero-tagline {
+  font-size: 1.3rem;
+  line-height: 1.4;
+  margin: 0 0 1.75rem;
+}
+.hero-right {
+  display: flex;
+  justify-content: center;
+}
+.hero-image {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  display: block;
+}
+
+.btn-cta {
+  width: auto;
+  padding: 14px 36px;
+  background: linear-gradient(90deg, var(--cta-gradient-start), var(--cta-gradient-end));
+  color: var(--ink);
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  border-radius: 999px;
+  border: none;
+  min-height: 48px;
+}
 
 .field { margin-bottom: 1.25rem; }
 .field label {
@@ -384,6 +451,12 @@ input:focus, .chip:focus-visible, button:focus-visible {
 .insight-card p { margin: 0; font-size: 0.88rem; opacity: 0.85; }
 
 .actions { margin-top: 1.5rem; }
+
+@media (max-width: 767px) {
+  .hero { grid-template-columns: 1fr; gap: 20px; }
+  .hero-right { order: 2; }
+  .hero-image { max-width: 160px; }
+}
 
 @media (max-width: 600px) {
   .grid-2 { grid-template-columns: 1fr; }
