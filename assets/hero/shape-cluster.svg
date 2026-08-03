@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-hidden="true">
+  <!-- purple stepped shape -->
+  <path d="M50,320 L50,260 L110,260 L110,200 L170,200 L170,140 L230,140 L230,320 Z" fill="#3B2E85" />
+
+  <!-- pink circle -->
+  <circle cx="195" cy="230" r="88" fill="#D98BA0" />
+
+  <!-- orange square -->
+  <rect x="60" y="290" width="90" height="90" rx="10" fill="#E07A4E" transform="rotate(14 105 335)" />
+
+  <!-- mint pentagon -->
+  <polygon points="305,45 355,82 336,140 274,140 255,82" fill="#8FBFA0" />
+
+  <!-- rust donut -->
+  <path fill-rule="evenodd" clip-rule="evenodd" fill="#C1502E"
+    d="M330,300 a58,58 0 1 1 -0.1,0 Z M330,328 a30,30 0 1 0 0.1,0 Z" />
+</svg>
