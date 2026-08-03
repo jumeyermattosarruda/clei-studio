@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clei Studio — Easy-whimsy ceramic pricing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<img class="blob blob-a" src="assets/blob1.svg" alt="" aria-hidden="true">
+<img class="blob blob-b" src="assets/blob2.svg" alt="" aria-hidden="true">
+<img class="blob blob-c" src="assets/blob3.svg" alt="" aria-hidden="true">
+
+<main class="wrap">
+  <header class="brand">
+    <span class="brand-name">Clei Studio</span>
+    <span class="brand-tag">Easy-whimsy ceramic pricing</span>
+  </header>
+
+  <!-- Screen 1: Welcome -->
+  <section class="screen active" id="screen-welcome">
+    <div class="card center">
+      <h1>Let's figure out what your work is really worth.</h1>
+      <p class="lede">We help you with pricing, so you can focus on artsy-ing.</p>
+      <button class="btn btn-primary" data-next="screen-studio">Let's Start</button>
+    </div>
+  </section>
+
+  <!-- Screen 2: Studio Setup -->
+  <section class="screen" id="screen-studio">
+    <div class="card">
+      <h1>First, tell me a little about your studio.</h1>
+
+      <form id="form-studio">
+        <div class="field">
+          <label for="monthlyCosts">Monthly Studio Costs ($)
+            <button type="button" class="tip-toggle" aria-label="What's this?">?</button>
+          </label>
+          <p class="tip">Everything you pay to keep your studio running — even if you don't make a single piece.</p>
+          <input type="number" id="monthlyCosts" min="0" step="0.01" required inputmode="decimal">
+        </div>
+
+        <div class="field">
+          <label for="desiredIncome">Desired Monthly Income ($)</label>
+          <input type="number" id="desiredIncome" min="0" step="0.01" required inputmode="decimal">
+        </div>
+
+        <div class="field">
+          <label for="productiveHours">Productive Hours Per Month
+            <button type="button" class="tip-toggle" aria-label="What's this?">?</button>
+          </label>
+          <p class="tip">Count only the hours you spend making ceramics.</p>
+          <input type="number" id="productiveHours" min="1" step="1" required inputmode="numeric">
+        </div>
+
+        <div class="field">
+          <label for="piecesPerMonth">Pieces Finished Per Month</label>
+          <input type="number" id="piecesPerMonth" min="1" step="1" required inputmode="numeric">
+        </div>
+
+        <p class="error" id="studio-error" hidden></p>
+        <button type="submit" class="btn btn-primary">Continue</button>
+      </form>
+
+      <div class="snapshot" id="studio-snapshot" hidden>
+        <h2>Your Studio Snapshot</h2>
+        <div class="snapshot-row"><span>Hourly Rate</span><strong id="snap-hourly">$0</strong></div>
+        <div class="snapshot-row"><span>Studio Cost Per Piece</span><strong id="snap-studiocost">$0</strong></div>
+        <p class="lede">We'll use these numbers to help price every piece you create today.</p>
+        <button class="btn btn-primary" data-next="screen-piece">Meet Your Piece</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screen 3: Piece Details -->
+  <section class="screen" id="screen-piece">
+    <div class="card">
+      <h1>Now let's meet your piece.</h1>
+
+      <form id="form-piece">
+        <div class="field">
+          <label for="pieceName">Piece Name</label>
+          <input type="text" id="pieceName" required>
+        </div>
+
+        <div class="field">
+          <label>Production Method
+            <button type="button" class="tip-toggle" aria-label="What's this?">?</button>
+          </label>
+          <p class="tip">Different production methods often lead to different amounts of labor and repeatability.</p>
+          <div class="chip-group" data-field="productionMethod">
+            <button type="button" class="chip">Wheel-thrown</button>
+            <button type="button" class="chip">Hand-built</button>
+            <button type="button" class="chip">Mold-assisted</button>
+            <button type="button" class="chip">Slip Cast</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Business Role
+            <button type="button" class="tip-toggle" aria-label="What's this?">?</button>
+          </label>
+          <p class="tip">Think about the role this piece plays in your collection — not just how it's made.</p>
+          <div class="chip-group" data-field="businessRole">
+            <button type="button" class="chip">Entry Product</button>
+            <button type="button" class="chip">Core Collection</button>
+            <button type="button" class="chip">Signature Piece</button>
+            <button type="button" class="chip">Collector Piece</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Material Costs</label>
+          <div class="grid-2">
+            <div class="subfield"><label for="matClay">Clay ($)</label><input type="number" id="matClay" min="0" step="0.01" value="0" inputmode="decimal"></div>
+            <div class="subfield"><label for="matGlaze">Glaze ($)</label><input type="number" id="matGlaze" min="0" step="0.01" value="0" inputmode="decimal"></div>
+            <div class="subfield"><label for="matPackaging">Packaging ($)</label><input type="number" id="matPackaging" min="0" step="0.01" value="0" inputmode="decimal"></div>
+            <div class="subfield"><label for="matOther">Other ($)</label><input type="number" id="matOther" min="0" step="0.01" value="0" inputmode="decimal"></div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="firings">Estimated Firings ($)</label>
+          <input type="number" id="firings" min="0" step="0.01" value="0" inputmode="decimal">
+        </div>
+
+        <div class="field">
+          <label>Production Time</label>
+          <div class="chip-group" data-field="productionTimeMinutes">
+            <button type="button" class="chip" data-value="15">15 min</button>
+            <button type="button" class="chip" data-value="30">30 min</button>
+            <button type="button" class="chip" data-value="45">45 min</button>
+            <button type="button" class="chip" data-value="60">60 min</button>
+            <button type="button" class="chip" data-value="90">90 min</button>
+            <button type="button" class="chip" data-value="120">120 min</button>
+            <button type="button" class="chip" data-value="180">180 min</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Batch Production</label>
+          <div class="chip-group" data-field="isBatched">
+            <button type="button" class="chip" data-value="yes">Yes</button>
+            <button type="button" class="chip" data-value="no">No</button>
+          </div>
+        </div>
+
+        <div class="field batch-only" id="batch-details" hidden>
+          <label>Typical Batch Size</label>
+          <div class="chip-group" data-field="batchSize">
+            <button type="button" class="chip" data-value="5">5</button>
+            <button type="button" class="chip" data-value="10">10</button>
+            <button type="button" class="chip" data-value="20">20</button>
+            <button type="button" class="chip" data-value="50">50</button>
+          </div>
+
+          <label class="mt">How much time does batching save?</label>
+          <div class="chip-group" data-field="timeSavings">
+            <button type="button" class="chip">Not really</button>
+            <button type="button" class="chip">A little</button>
+            <button type="button" class="chip">Quite a bit</button>
+            <button type="button" class="chip">A lot</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Sales Channel
+            <button type="button" class="tip-toggle" aria-label="What's this?">?</button>
+          </label>
+          <p class="tip">Different sales channels often support different pricing strategies.</p>
+          <div class="chip-group" data-field="salesChannel">
+            <button type="button" class="chip">Markets/Fairs</button>
+            <button type="button" class="chip">Online</button>
+            <button type="button" class="chip">Direct</button>
+            <button type="button" class="chip">Gallery</button>
+          </div>
+        </div>
+
+        <p class="error" id="piece-error" hidden></p>
+        <button type="submit" class="btn btn-primary">See My Price</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Screen 4: Results -->
+  <section class="screen" id="screen-results">
+    <div class="card">
+      <h1>Here's what I'd charge — and why.</h1>
+
+      <div class="price-cards">
+        <div class="price-card">
+          <span class="price-label">Minimum</span>
+          <span class="price-value" id="price-min">$0</span>
+        </div>
+        <div class="price-card featured">
+          <span class="price-label">Studio ⭐</span>
+          <span class="price-value" id="price-studio">$0</span>
+        </div>
+        <div class="price-card">
+          <span class="price-label">Collector</span>
+          <span class="price-value" id="price-collector">$0</span>
+        </div>
+      </div>
+
+      <div class="breakdown">
+        <h2>Price Breakdown</h2>
+        <div class="breakdown-row"><span>Clay</span><span id="bd-clay">$0</span></div>
+        <div class="breakdown-row"><span>Glaze</span><span id="bd-glaze">$0</span></div>
+        <div class="breakdown-row"><span>Packaging</span><span id="bd-packaging">$0</span></div>
+        <div class="breakdown-row"><span>Other</span><span id="bd-other">$0</span></div>
+        <div class="breakdown-row"><span>Firings</span><span id="bd-firings">$0</span></div>
+        <div class="breakdown-row"><span>Labor</span><span id="bd-labor">$0</span></div>
+        <div class="breakdown-row"><span>Studio Costs</span><span id="bd-studio">$0</span></div>
+        <div class="breakdown-row total"><span>True Cost</span><span id="bd-total">$0</span></div>
+      </div>
+
+      <div class="insights" id="insights"></div>
+
+      <div class="actions">
+        <button class="btn btn-secondary" id="btn-another">Price Another Piece</button>
+        <button class="btn btn-ghost" id="btn-restart">Start Over</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
