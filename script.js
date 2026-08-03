@@ -236,6 +236,12 @@ $('form-studio').addEventListener('submit', (e) => {
   $('snap-studiocost').textContent = money(state.studio.studioCostPerPiece);
   $('studio-snapshot').hidden = false;
   updateBreadcrumbs('screen-studio');
+
+  posthog.capture('studio_setup_completed', {
+    hourly_rate: state.studio.hourlyRate,
+    studio_cost_per_piece: state.studio.studioCostPerPiece,
+    pieces_per_month: piecesPerMonth,
+  });
 });
 
 // Screen 3: Piece Details
@@ -344,6 +350,14 @@ $('form-piece').addEventListener('submit', (e) => {
   state.piece.batch.timeSavings = state.piece.batch.isBatched ? timeSavings : null;
   state.piece.salesChannel = salesChannel;
 
+  posthog.capture('piece_registered', {
+    production_method: productionMethod,
+    business_role: businessRole,
+    sales_channel: salesChannel,
+    production_time_minutes: state.piece.productionTimeMinutes,
+    is_batched: state.piece.batch.isBatched,
+  });
+
   calculateAndRender();
   showScreen('screen-results');
 });
@@ -394,6 +408,15 @@ function calculateAndRender() {
     minimum, studioPrice, collector
   });
   persistPieces();
+
+  posthog.capture('pricing_results_viewed', {
+    business_role: businessRole,
+    sales_channel: salesChannel,
+    true_cost: trueCost,
+    minimum_price: minimum,
+    studio_price: studioPrice,
+    collector_price: collector,
+  });
 }
 
 function renderInsights({ laborCost, trueCost, studioCostPerPiece, productionTimeMinutes, businessRole, batch }) {
@@ -436,6 +459,9 @@ function renderInsights({ laborCost, trueCost, studioCostPerPiece, productionTim
 
 // Screen 4 actions
 $('btn-another').addEventListener('click', () => {
+  posthog.capture('price_another_piece_clicked', {
+    pieces_priced_so_far: state.savedPieces.length,
+  });
   state.piece = blankPiece();
   showScreen('screen-piece');
 });
