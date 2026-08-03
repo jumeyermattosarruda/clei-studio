@@ -178,6 +178,21 @@ h2 { font-size: 1.15rem; margin: 1.5rem 0 0.75rem; }
   background: rgba(46, 42, 61, 0.08);
   flex-shrink: 0;
 }
+.piece-item-open {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.piece-item-open:hover { opacity: 0.7; }
 .piece-item-info { flex: 1; min-width: 0; }
 .piece-item-name { font-weight: 600; font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .piece-item-price { font-size: 0.8rem; opacity: 0.7; }
@@ -255,29 +270,13 @@ input:focus, .chip:focus-visible, button:focus-visible {
 }
 .subfield label { font-weight: 500; font-size: 0.85rem; }
 
-.tip-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-left: 6px;
-  border-radius: 50%;
-  border: none;
-  background: var(--accent-teal);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 700;
-  cursor: pointer;
-  vertical-align: middle;
-}
 .tip {
-  display: none;
+  display: block;
   font-size: 0.85rem;
-  opacity: 0.75;
-  margin: 0.25rem 0 0.6rem;
+  font-weight: 400;
+  opacity: 0.7;
+  margin: 0.1rem 0 0.6rem;
 }
-.tip.open { display: block; }
 
 .chip-group {
   display: flex;
