@@ -1,3 +1,6 @@
+const STORAGE_STUDIO = 'cleiStudio.studio';
+const STORAGE_PIECES = 'cleiStudio.pieces';
+
 const state = {
   studio: {
     monthlyCosts: null,
@@ -7,8 +10,14 @@ const state = {
     hourlyRate: null,
     studioCostPerPiece: null
   },
-  piece: {
+  piece: blankPiece(),
+  savedPieces: []
+};
+
+function blankPiece() {
+  return {
     name: null,
+    image: null,
     productionMethod: null,
     businessRole: null,
     materials: { clay: 0, glaze: 0, packaging: 0, other: 0 },
@@ -16,28 +25,143 @@ const state = {
     productionTimeMinutes: null,
     batch: { isBatched: false, batchSize: null, timeSavings: null },
     salesChannel: null
-  }
-};
+  };
+}
 
 const $ = (id) => document.getElementById(id);
 const money = (n) => `$${n.toFixed(2)}`;
 
+function loadPersisted() {
+  try {
+    const studio = JSON.parse(localStorage.getItem(STORAGE_STUDIO));
+    if (studio) Object.assign(state.studio, studio);
+  } catch (e) { /* corrupt or missing, ignore */ }
+  try {
+    const pieces = JSON.parse(localStorage.getItem(STORAGE_PIECES));
+    if (Array.isArray(pieces)) state.savedPieces = pieces;
+  } catch (e) { /* corrupt or missing, ignore */ }
+}
+
+function persistStudio() {
+  try { localStorage.setItem(STORAGE_STUDIO, JSON.stringify(state.studio)); }
+  catch (e) { console.warn('Could not save studio info', e); }
+}
+
+function persistPieces() {
+  try { localStorage.setItem(STORAGE_PIECES, JSON.stringify(state.savedPieces)); }
+  catch (e) { console.warn('Could not save pieces folder', e); }
+}
+
+// Navigation
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(id).classList.add('active');
+  $('breadcrumbs').hidden = (id === 'screen-welcome');
+  updateBreadcrumbs(id);
+  if (id === 'screen-studio') populateStudioForm();
+  if (id === 'screen-piece') populatePieceForm();
+  closeSideMenu();
   window.scrollTo(0, 0);
+}
+
+function updateBreadcrumbs(currentId) {
+  document.querySelectorAll('.crumb').forEach(btn => {
+    const target = btn.dataset.crumb;
+    const reachable = target === 'screen-studio'
+      || (target === 'screen-piece' && state.studio.hourlyRate !== null)
+      || (target === 'screen-results' && state.piece.name !== null);
+    btn.disabled = !reachable;
+    btn.classList.toggle('active', target === currentId);
+  });
 }
 
 document.querySelectorAll('[data-next]').forEach(btn => {
   btn.addEventListener('click', () => showScreen(btn.dataset.next));
 });
 
+document.querySelectorAll('.crumb').forEach(btn => {
+  btn.addEventListener('click', () => { if (!btn.disabled) showScreen(btn.dataset.crumb); });
+});
+
+$('title-home').addEventListener('click', () => showScreen('screen-welcome'));
+
+// Tooltips
 document.querySelectorAll('.tip-toggle').forEach(btn => {
   btn.addEventListener('click', () => {
-    btn.nextElementSibling.classList.toggle('open');
+    $(btn.dataset.tip).classList.toggle('open');
   });
 });
 
+// Side menu
+function openSideMenu() {
+  $('side-menu').classList.add('open');
+  $('side-menu-overlay').classList.add('open');
+  document.body.classList.add('no-scroll');
+  renderSideStudioSummary();
+  renderSavedPieces();
+}
+function closeSideMenu() {
+  $('side-menu').classList.remove('open');
+  $('side-menu-overlay').classList.remove('open');
+  document.body.classList.remove('no-scroll');
+}
+$('menu-toggle').addEventListener('click', openSideMenu);
+$('side-menu-close').addEventListener('click', closeSideMenu);
+$('side-menu-overlay').addEventListener('click', closeSideMenu);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSideMenu(); });
+
+$('side-edit-studio').addEventListener('click', () => {
+  closeSideMenu();
+  showScreen('screen-studio');
+});
+
+function renderSideStudioSummary() {
+  const el = $('side-studio-summary');
+  const s = state.studio;
+  if (s.hourlyRate === null) {
+    el.innerHTML = '<p class="empty-note">Not set up yet.</p>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="summary-row"><span>Monthly Studio Costs</span><strong>${money(s.monthlyCosts)}</strong></div>
+    <div class="summary-row"><span>Desired Monthly Income</span><strong>${money(s.desiredIncome)}</strong></div>
+    <div class="summary-row"><span>Productive Hours</span><strong>${s.productiveHours}</strong></div>
+    <div class="summary-row"><span>Pieces / Month</span><strong>${s.piecesPerMonth}</strong></div>
+    <div class="summary-row"><span>Hourly Rate</span><strong>${money(s.hourlyRate)}</strong></div>
+    <div class="summary-row"><span>Studio Cost / Piece</span><strong>${money(s.studioCostPerPiece)}</strong></div>
+  `;
+}
+
+function renderSavedPieces() {
+  const list = $('pieces-list');
+  const empty = $('pieces-empty');
+  list.innerHTML = '';
+  empty.hidden = state.savedPieces.length > 0;
+  state.savedPieces.forEach(p => {
+    const li = document.createElement('li');
+    li.className = 'piece-item';
+    li.innerHTML = `
+      ${p.image ? `<img class="piece-item-thumb" src="${p.image}" alt="">` : '<div class="piece-item-thumb"></div>'}
+      <div class="piece-item-info">
+        <span class="piece-item-name">${p.name}</span>
+        <span class="piece-item-price">Studio ⭐ ${money(p.studioPrice)}</span>
+      </div>
+      <button type="button" class="piece-item-delete" aria-label="Delete ${p.name}" data-id="${p.id}">✕</button>
+    `;
+    list.appendChild(li);
+  });
+}
+
+$('pieces-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.piece-item-delete');
+  if (!btn) return;
+  const id = Number(btn.dataset.id);
+  state.savedPieces = state.savedPieces.filter(p => p.id !== id);
+  persistPieces();
+  renderSavedPieces();
+});
+
+// Chips
 document.querySelectorAll('.chip-group').forEach(group => {
   group.addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
@@ -61,7 +185,31 @@ function chipValue(field) {
   return selected.dataset.value ?? selected.textContent;
 }
 
+function selectChip(field, value) {
+  const group = document.querySelector(`.chip-group[data-field="${field}"]`);
+  group.querySelectorAll('.chip').forEach(c => {
+    const v = c.dataset.value ?? c.textContent;
+    c.classList.toggle('selected', value !== null && v === value);
+  });
+}
+
 // Screen 2: Studio Setup
+function populateStudioForm() {
+  const s = state.studio;
+  $('monthlyCosts').value = s.monthlyCosts ?? '';
+  $('desiredIncome').value = s.desiredIncome ?? '';
+  $('productiveHours').value = s.productiveHours ?? '';
+  $('piecesPerMonth').value = s.piecesPerMonth ?? '';
+  $('studio-error').hidden = true;
+  if (s.hourlyRate !== null) {
+    $('snap-hourly').textContent = money(s.hourlyRate);
+    $('snap-studiocost').textContent = money(s.studioCostPerPiece);
+    $('studio-snapshot').hidden = false;
+  } else {
+    $('studio-snapshot').hidden = true;
+  }
+}
+
 $('form-studio').addEventListener('submit', (e) => {
   e.preventDefault();
   const monthlyCosts = parseFloat($('monthlyCosts').value);
@@ -82,14 +230,84 @@ $('form-studio').addEventListener('submit', (e) => {
   state.studio.piecesPerMonth = piecesPerMonth;
   state.studio.hourlyRate = desiredIncome / productiveHours;
   state.studio.studioCostPerPiece = monthlyCosts / piecesPerMonth;
+  persistStudio();
 
   $('snap-hourly').textContent = money(state.studio.hourlyRate);
   $('snap-studiocost').textContent = money(state.studio.studioCostPerPiece);
-  $('form-studio').hidden = true;
   $('studio-snapshot').hidden = false;
+  updateBreadcrumbs('screen-studio');
 });
 
 // Screen 3: Piece Details
+function resetPieceForm() {
+  $('form-piece').reset();
+  document.querySelectorAll('#form-piece .chip').forEach(c => c.classList.remove('selected'));
+  $('batch-details').hidden = true;
+  $('piece-error').hidden = true;
+  $('pieceImagePreview').hidden = true;
+  $('pieceImagePreview').removeAttribute('src');
+}
+
+function fillPieceForm() {
+  const p = state.piece;
+  $('pieceName').value = p.name || '';
+  selectChip('productionMethod', p.productionMethod);
+  selectChip('businessRole', p.businessRole);
+  $('matClay').value = p.materials.clay;
+  $('matGlaze').value = p.materials.glaze;
+  $('matPackaging').value = p.materials.packaging;
+  $('matOther').value = p.materials.other;
+  $('firings').value = p.firings;
+  selectChip('productionTimeMinutes', p.productionTimeMinutes !== null ? String(p.productionTimeMinutes) : null);
+  selectChip('isBatched', p.batch.isBatched ? 'yes' : 'no');
+  $('batch-details').hidden = !p.batch.isBatched;
+  selectChip('batchSize', p.batch.isBatched ? String(p.batch.batchSize) : null);
+  selectChip('timeSavings', p.batch.isBatched ? p.batch.timeSavings : null);
+  selectChip('salesChannel', p.salesChannel);
+  if (p.image) {
+    $('pieceImagePreview').src = p.image;
+    $('pieceImagePreview').hidden = false;
+  } else {
+    $('pieceImagePreview').hidden = true;
+  }
+}
+
+function populatePieceForm() {
+  if (state.piece.name) fillPieceForm(); else resetPieceForm();
+}
+
+function resizeImageFile(file, maxDim = 480) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+$('pieceImage').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) {
+    state.piece.image = null;
+    $('pieceImagePreview').hidden = true;
+    return;
+  }
+  const dataUrl = await resizeImageFile(file);
+  state.piece.image = dataUrl;
+  $('pieceImagePreview').src = dataUrl;
+  $('pieceImagePreview').hidden = false;
+});
+
 $('form-piece').addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -168,6 +386,14 @@ function calculateAndRender() {
   $('bd-total').textContent = money(trueCost);
 
   renderInsights({ laborCost, trueCost, studioCostPerPiece, productionTimeMinutes, businessRole, batch });
+
+  state.savedPieces.unshift({
+    id: Date.now(),
+    name: state.piece.name,
+    image: state.piece.image,
+    minimum, studioPrice, collector
+  });
+  persistPieces();
 }
 
 function renderInsights({ laborCost, trueCost, studioCostPerPiece, productionTimeMinutes, businessRole, batch }) {
@@ -210,23 +436,15 @@ function renderInsights({ laborCost, trueCost, studioCostPerPiece, productionTim
 
 // Screen 4 actions
 $('btn-another').addEventListener('click', () => {
-  state.piece = {
-    name: null,
-    productionMethod: null,
-    businessRole: null,
-    materials: { clay: 0, glaze: 0, packaging: 0, other: 0 },
-    firings: 0,
-    productionTimeMinutes: null,
-    batch: { isBatched: false, batchSize: null, timeSavings: null },
-    salesChannel: null
-  };
-  $('form-piece').reset();
-  document.querySelectorAll('#form-piece .chip').forEach(c => c.classList.remove('selected'));
-  $('batch-details').hidden = true;
-  $('piece-error').hidden = true;
+  state.piece = blankPiece();
   showScreen('screen-piece');
 });
 
 $('btn-restart').addEventListener('click', () => {
+  localStorage.removeItem(STORAGE_STUDIO);
   location.reload();
 });
+
+// Init
+loadPersisted();
+updateBreadcrumbs('screen-welcome');
