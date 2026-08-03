@@ -14,6 +14,7 @@
         api_host: 'https://us.i.posthog.com',
         defaults: '2026-05-30',
         person_profiles: 'identified_only',
+        capture_exceptions: true,
     })
 </script>
 </head>
@@ -86,7 +87,6 @@
       <form id="form-studio">
         <div class="field">
           <label for="monthlyCosts">Monthly Studio Costs ($)
-            <button type="button" class="tip-toggle" data-tip="tip-monthlyCosts" title="Everything you pay to keep your studio running—even if you don't make a single piece." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-monthlyCosts">Everything you pay to keep your studio running—even if you don't make a single piece.</p>
           <input type="number" id="monthlyCosts" min="0" step="0.01" required inputmode="decimal">
@@ -94,7 +94,6 @@
 
         <div class="field">
           <label for="desiredIncome">Desired Monthly Income ($)
-            <button type="button" class="tip-toggle" data-tip="tip-desiredIncome" title="Think about what you'd like your ceramic practice to earn each month before taxes." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-desiredIncome">Think about what you'd like your ceramic practice to earn each month before taxes.</p>
           <input type="number" id="desiredIncome" min="0" step="0.01" required inputmode="decimal">
@@ -102,7 +101,6 @@
 
         <div class="field">
           <label for="productiveHours">Productive Hours Per Month
-            <button type="button" class="tip-toggle" data-tip="tip-productiveHours" title="Count only the hours you spend making ceramics. Leave out admin, social media, shopping, and other non-making tasks." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-productiveHours">Count only the hours you spend making ceramics. Leave out admin, social media, shopping, and other non-making tasks.</p>
           <input type="number" id="productiveHours" min="1" step="1" required inputmode="numeric">
@@ -110,14 +108,13 @@
 
         <div class="field">
           <label for="piecesPerMonth">Pieces Finished Per Month
-            <button type="button" class="tip-toggle" data-tip="tip-piecesPerMonth" title="Estimate how many finished pieces you typically complete in a month. This helps spread your studio costs across your work." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-piecesPerMonth">Estimate how many finished pieces you typically complete in a month. This helps spread your studio costs across your work.</p>
           <input type="number" id="piecesPerMonth" min="1" step="1" required inputmode="numeric">
         </div>
 
         <p class="error" id="studio-error" hidden></p>
-        <button type="submit" class="btn btn-primary">Save Studio Info</button>
+        <button type="submit" class="btn btn-primary" id="btn-save-studio">Save Studio Info</button>
       </form>
 
       <div class="snapshot" id="studio-snapshot" hidden>
@@ -149,7 +146,6 @@
 
         <div class="field">
           <label>Production Method
-            <button type="button" class="tip-toggle" data-tip="tip-productionMethod" title="Different production methods usually require different amounts of labor and repeatability." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-productionMethod">Different production methods usually require different amounts of labor and repeatability.</p>
           <div class="chip-group" data-field="productionMethod">
@@ -162,7 +158,6 @@
 
         <div class="field">
           <label>Business Role
-            <button type="button" class="tip-toggle" data-tip="tip-businessRole" title="Think about the role this piece plays in your collection—not just how it's made." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-businessRole">Think about the role this piece plays in your collection—not just how it's made.</p>
           <div class="chip-group" data-field="businessRole">
@@ -175,34 +170,29 @@
 
         <div class="field">
           <label>Material Costs
-            <button type="button" class="tip-toggle" data-tip="tip-materialCosts" title="Include every consumable material used to make this piece." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-materialCosts">Include every consumable material used to make this piece.</p>
           <div class="grid-2">
             <div class="subfield">
               <label for="matClay">Clay ($)
-                <button type="button" class="tip-toggle" data-tip="tip-clay" title="The cost of the clay used for this piece." aria-label="What's this?">?</button>
               </label>
               <p class="tip" id="tip-clay">The cost of the clay used for this piece.</p>
               <input type="number" id="matClay" min="0" step="0.01" value="0" inputmode="decimal">
             </div>
             <div class="subfield">
               <label for="matGlaze">Glaze ($)
-                <button type="button" class="tip-toggle" data-tip="tip-glaze" title="Include all glazes, stains, oxides, underglazes, or other finishing materials." aria-label="What's this?">?</button>
               </label>
               <p class="tip" id="tip-glaze">Include all glazes, stains, oxides, underglazes, or other finishing materials.</p>
               <input type="number" id="matGlaze" min="0" step="0.01" value="0" inputmode="decimal">
             </div>
             <div class="subfield">
               <label for="matPackaging">Packaging ($)
-                <button type="button" class="tip-toggle" data-tip="tip-packaging" title="Boxes, tissue paper, stickers, thank-you cards, or anything you include when selling the piece." aria-label="What's this?">?</button>
               </label>
               <p class="tip" id="tip-packaging">Boxes, tissue paper, stickers, thank-you cards, or anything you include when selling the piece.</p>
               <input type="number" id="matPackaging" min="0" step="0.01" value="0" inputmode="decimal">
             </div>
             <div class="subfield">
               <label for="matOther">Other ($)
-                <button type="button" class="tip-toggle" data-tip="tip-other" title="Any additional consumables, like decals, gold luster, wax resist, or specialty materials." aria-label="What's this?">?</button>
               </label>
               <p class="tip" id="tip-other">Any additional consumables, like decals, gold luster, wax resist, or specialty materials.</p>
               <input type="number" id="matOther" min="0" step="0.01" value="0" inputmode="decimal">
@@ -212,7 +202,6 @@
 
         <div class="field">
           <label for="firings">Estimated Firings ($)
-            <button type="button" class="tip-toggle" data-tip="tip-firings" title="Enter your estimated firing cost for this piece, based on how you usually calculate kiln usage." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-firings">Enter your estimated firing cost for this piece, based on how you usually calculate kiln usage.</p>
           <input type="number" id="firings" min="0" step="0.01" value="0" inputmode="decimal">
@@ -220,7 +209,6 @@
 
         <div class="field">
           <label>Production Time
-            <button type="button" class="tip-toggle" data-tip="tip-productionTime" title="Include the total hands-on time to make this piece—from forming to the final finishing touches. Waiting for pieces to dry or fire doesn't count." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-productionTime">Include the total hands-on time to make this piece—from forming to the final finishing touches. Waiting for pieces to dry or fire doesn't count.</p>
           <div class="chip-group" data-field="productionTimeMinutes">
@@ -236,7 +224,6 @@
 
         <div class="field">
           <label>Batch Production
-            <button type="button" class="tip-toggle" data-tip="tip-batchProduction" title="Making several similar pieces together often reduces the time spent on each one." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-batchProduction">Making several similar pieces together often reduces the time spent on each one.</p>
           <div class="chip-group" data-field="isBatched">
@@ -247,7 +234,6 @@
 
         <div class="field batch-only" id="batch-details" hidden>
           <label>Typical Batch Size
-            <button type="button" class="tip-toggle" data-tip="tip-batchSize" title="Choose the option that's closest to how you usually work. It doesn't need to be exact." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-batchSize">Choose the option that's closest to how you usually work. It doesn't need to be exact.</p>
           <div class="chip-group" data-field="batchSize">
@@ -258,7 +244,6 @@
           </div>
 
           <label class="mt">How much time does batching save?
-            <button type="button" class="tip-toggle" data-tip="tip-timeSavings" title="Think about your overall workflow. Compared to making one piece at a time, how much faster is your process when you work in batches?" aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-timeSavings">Think about your overall workflow. Compared to making one piece at a time, how much faster is your process when you work in batches?</p>
           <div class="chip-group" data-field="timeSavings">
@@ -271,7 +256,6 @@
 
         <div class="field">
           <label>Sales Channel
-            <button type="button" class="tip-toggle" data-tip="tip-salesChannel" title="Different ways of selling often support different pricing strategies. Choose where this piece is most likely to be sold." aria-label="What's this?">?</button>
           </label>
           <p class="tip" id="tip-salesChannel">Different ways of selling often support different pricing strategies. Choose where this piece is most likely to be sold.</p>
           <div class="chip-group" data-field="salesChannel">

@@ -1,5 +1,21 @@
 const STORAGE_STUDIO = 'cleiStudio.studio';
 const STORAGE_PIECES = 'cleiStudio.pieces';
+const STORAGE_DISTINCT_ID = 'cleiStudio.distinctId';
+
+// Stable per-browser id used to identify a maker once they complete setup.
+// The app has no login, so we mint and persist our own id rather than fabricate
+// one per visit.
+function studioDistinctId() {
+  let id = null;
+  try { id = localStorage.getItem(STORAGE_DISTINCT_ID); } catch (e) { /* ignore */ }
+  if (!id) {
+    id = 'studio-' + (self.crypto?.randomUUID
+      ? crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2));
+    try { localStorage.setItem(STORAGE_DISTINCT_ID, id); } catch (e) { /* ignore */ }
+  }
+  return id;
+}
 
 const state = {
   studio: {
@@ -85,13 +101,6 @@ document.querySelectorAll('.crumb').forEach(btn => {
 
 $('title-home').addEventListener('click', () => showScreen('screen-welcome'));
 
-// Tooltips
-document.querySelectorAll('.tip-toggle').forEach(btn => {
-  btn.addEventListener('click', () => {
-    $(btn.dataset.tip).classList.toggle('open');
-  });
-});
-
 // Side menu
 function openSideMenu() {
   $('side-menu').classList.add('open');
@@ -141,11 +150,13 @@ function renderSavedPieces() {
     const li = document.createElement('li');
     li.className = 'piece-item';
     li.innerHTML = `
-      ${p.image ? `<img class="piece-item-thumb" src="${p.image}" alt="">` : '<div class="piece-item-thumb"></div>'}
-      <div class="piece-item-info">
-        <span class="piece-item-name">${p.name}</span>
-        <span class="piece-item-price">Studio ⭐ ${money(p.studioPrice)}</span>
-      </div>
+      <button type="button" class="piece-item-open" data-id="${p.id}">
+        ${p.image ? `<img class="piece-item-thumb" src="${p.image}" alt="">` : '<div class="piece-item-thumb"></div>'}
+        <div class="piece-item-info">
+          <span class="piece-item-name">${p.name}</span>
+          <span class="piece-item-price">Studio ⭐ ${money(p.studioPrice)}</span>
+        </div>
+      </button>
       <button type="button" class="piece-item-delete" aria-label="Delete ${p.name}" data-id="${p.id}">✕</button>
     `;
     list.appendChild(li);
@@ -153,12 +164,21 @@ function renderSavedPieces() {
 }
 
 $('pieces-list').addEventListener('click', (e) => {
-  const btn = e.target.closest('.piece-item-delete');
-  if (!btn) return;
-  const id = Number(btn.dataset.id);
-  state.savedPieces = state.savedPieces.filter(p => p.id !== id);
-  persistPieces();
-  renderSavedPieces();
+  const del = e.target.closest('.piece-item-delete');
+  if (del) {
+    const id = Number(del.dataset.id);
+    state.savedPieces = state.savedPieces.filter(p => p.id !== id);
+    persistPieces();
+    renderSavedPieces();
+    return;
+  }
+
+  const open = e.target.closest('.piece-item-open');
+  if (!open) return;
+  const saved = state.savedPieces.find(p => p.id === Number(open.dataset.id));
+  if (!saved || !saved.details) return;
+  state.piece = JSON.parse(JSON.stringify(saved.details));
+  showScreen('screen-piece');
 });
 
 // Chips
@@ -194,6 +214,14 @@ function selectChip(field, value) {
 }
 
 // Screen 2: Studio Setup
+// Once the studio snapshot is showing, demote the save button to secondary
+// so "Continue to Piece Details" reads as the primary action on the page.
+function setStudioSaveState(completed) {
+  const btn = $('btn-save-studio');
+  btn.classList.toggle('btn-primary', !completed);
+  btn.classList.toggle('btn-secondary', completed);
+}
+
 function populateStudioForm() {
   const s = state.studio;
   $('monthlyCosts').value = s.monthlyCosts ?? '';
@@ -201,13 +229,13 @@ function populateStudioForm() {
   $('productiveHours').value = s.productiveHours ?? '';
   $('piecesPerMonth').value = s.piecesPerMonth ?? '';
   $('studio-error').hidden = true;
-  if (s.hourlyRate !== null) {
+  const completed = s.hourlyRate !== null;
+  if (completed) {
     $('snap-hourly').textContent = money(s.hourlyRate);
     $('snap-studiocost').textContent = money(s.studioCostPerPiece);
-    $('studio-snapshot').hidden = false;
-  } else {
-    $('studio-snapshot').hidden = true;
   }
+  $('studio-snapshot').hidden = !completed;
+  setStudioSaveState(completed);
 }
 
 $('form-studio').addEventListener('submit', (e) => {
@@ -235,7 +263,21 @@ $('form-studio').addEventListener('submit', (e) => {
   $('snap-hourly').textContent = money(state.studio.hourlyRate);
   $('snap-studiocost').textContent = money(state.studio.studioCostPerPiece);
   $('studio-snapshot').hidden = false;
+  setStudioSaveState(true);
   updateBreadcrumbs('screen-studio');
+
+  // Completing studio setup is the moment we know something durable about this
+  // maker, so promote them to an identified person and attach their economics.
+  // With person_profiles: 'identified_only', visitors who never finish setup
+  // stay anonymous.
+  posthog.identify(studioDistinctId(), {
+    monthly_studio_costs: monthlyCosts,
+    desired_monthly_income: desiredIncome,
+    productive_hours_per_month: productiveHours,
+    pieces_per_month: piecesPerMonth,
+    hourly_rate: state.studio.hourlyRate,
+    studio_cost_per_piece: state.studio.studioCostPerPiece,
+  });
 
   posthog.capture('studio_setup_completed', {
     hourly_rate: state.studio.hourlyRate,
@@ -405,7 +447,8 @@ function calculateAndRender() {
     id: Date.now(),
     name: state.piece.name,
     image: state.piece.image,
-    minimum, studioPrice, collector
+    minimum, studioPrice, collector,
+    details: JSON.parse(JSON.stringify(state.piece))
   });
   persistPieces();
 
